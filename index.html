@@ -1,0 +1,1932 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Physics World</title>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+        />
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+        ></script>
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+            onload="renderMathInElement(document.body)"
+        ></script>
+
+        <style>
+            :root {
+                --primary: #007bff;
+                --primary-dark: #0056b3;
+                --secondary: #6c757d;
+                --bg: #f4f4f4;
+                --text: #333;
+                --white: #ffffff;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                background-color: var(--bg);
+                color: var(--text);
+                line-height: 1.7;
+            }
+
+            header {
+                text-align: center;
+                padding: 2rem;
+                background: linear-gradient(135deg, #007bff, #0056b3);
+                color: white;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+            header h1 {
+                margin: 0 0 1rem 0;
+                font-size: 2rem;
+            }
+
+            nav button {
+                margin: 0 5px;
+                padding: 8px 15px;
+                border: 1px solid white;
+                background: transparent;
+                color: white;
+                border-radius: 20px;
+                cursor: pointer;
+                transition: 0.3s;
+                font-size: 0.9rem;
+            }
+            nav button:hover {
+                background: white;
+                color: var(--primary);
+            }
+
+            .section-nav {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                padding: 15px 20px;
+                gap: 8px;
+                background: white;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                border-bottom: 1px solid #ddd;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            }
+
+            .section-btn {
+                padding: 9px 18px;
+                background-color: white;
+                border: 2px solid var(--primary);
+                color: var(--primary);
+                border-radius: 5px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: 0.3s;
+                font-size: 0.85rem;
+            }
+            .section-btn.active,
+            .section-btn:hover {
+                background-color: var(--primary);
+                color: white;
+            }
+
+            section {
+                display: none;
+                max-width: 900px;
+                margin: 40px auto;
+                padding: 30px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+            }
+            section.active {
+                display: block;
+                animation: fadeIn 0.4s ease;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(12px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            h2 {
+                color: var(--primary-dark);
+                border-bottom: 2px solid #e8f0fe;
+                padding-bottom: 8px;
+            }
+            h3 {
+                color: #0056b3;
+                margin-top: 1.5rem;
+            }
+
+            ul {
+                padding-left: 20px;
+            }
+            ul li {
+                margin-bottom: 10px;
+            }
+
+            /* ── Animations ── */
+            .animation-container {
+                width: 100%;
+                height: 200px;
+                position: relative;
+                overflow: hidden;
+                background-color: #eef2f7;
+                margin: 20px 0 8px;
+                border: 1px solid #ccd6e8;
+                border-radius: 8px;
+            }
+
+            .anim-label {
+                text-align: center;
+                font-size: 12px;
+                color: #666;
+                margin-bottom: 16px;
+                font-style: italic;
+            }
+
+            .ball {
+                width: 44px;
+                height: 44px;
+                background: radial-gradient(
+                    circle at 30% 30%,
+                    #ff4d4d,
+                    #b30000
+                );
+                border-radius: 50%;
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                animation-duration: 4s;
+                animation-iteration-count: infinite;
+                animation-timing-function: linear;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 11px;
+                font-weight: bold;
+            }
+
+            .ball-m1 {
+                background: radial-gradient(
+                    circle at 30% 30%,
+                    #ff4d4d,
+                    #b30000
+                );
+                animation-name: reaction-m1;
+            }
+            .ball-m2 {
+                background: radial-gradient(
+                    circle at 30% 30%,
+                    #ff9900,
+                    #cc6600
+                );
+                animation-name: reaction-m2;
+                left: 65%;
+            }
+
+            .car {
+                width: 70px;
+                height: 32px;
+                background-color: #0056b3;
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                border-radius: 6px;
+                animation: accelerate 4s infinite ease-in;
+            }
+            .car::before {
+                content: "";
+                position: absolute;
+                top: -14px;
+                left: 8px;
+                width: 40px;
+                height: 14px;
+                background: #3a7bd5;
+                border-radius: 4px 4px 0 0;
+            }
+
+            .spring {
+                width: 100px;
+                height: 20px;
+                background: repeating-linear-gradient(
+                    90deg,
+                    #999,
+                    #999 10px,
+                    #ccc 10px,
+                    #ccc 20px
+                );
+                position: absolute;
+                top: 50%;
+                left: 10%;
+                transform: translateY(-50%);
+                border-radius: 3px;
+                animation: stretch 2s infinite alternate ease-in-out;
+            }
+
+            .reactive-energy {
+                width: 44px;
+                height: 44px;
+                background: radial-gradient(
+                    circle at 30% 30%,
+                    #9b59b6,
+                    #6c3483
+                );
+                border-radius: 50%;
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                animation: oscillate 3s ease-in-out infinite;
+            }
+
+            /* Communicating vessels */
+            .vessel-wrapper {
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+                height: 160px;
+                gap: 0;
+                position: relative;
+                margin: 20px 0 8px;
+            }
+            .vessel {
+                width: 60px;
+                height: 120px;
+                border: 2px solid #555;
+                border-top: none;
+                position: relative;
+                overflow: hidden;
+                background: white;
+            }
+            .vessel-connector {
+                width: 40px;
+                height: 20px;
+                border: 2px solid #555;
+                border-left: none;
+                border-right: none;
+                background: #3498db;
+                align-self: flex-end;
+                margin-bottom: 0;
+            }
+            .liquid {
+                width: 100%;
+                background: linear-gradient(to bottom, #5dade2, #2980b9);
+                position: absolute;
+                bottom: 0;
+                animation: equalize 3s infinite alternate ease-in-out;
+            }
+            .liquid-rev {
+                animation-direction: alternate-reverse !important;
+            }
+
+            /* Manometer */
+            .manometer-wrap {
+                display: flex;
+                justify-content: center;
+                margin: 20px 0 8px;
+                height: 180px;
+                position: relative;
+            }
+            .manometer {
+                width: 160px;
+                height: 140px;
+                border-bottom: 2px solid #555;
+                border-left: 2px solid #555;
+                border-right: 2px solid #555;
+                position: relative;
+                background: white;
+            }
+            .liq-left {
+                width: 22px;
+                background: linear-gradient(to top, #f39c12, #e67e22);
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                animation: mano-left 3s ease-in-out infinite alternate;
+            }
+            .liq-right {
+                width: 22px;
+                background: linear-gradient(to top, #f39c12, #e67e22);
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                animation: mano-right 3s ease-in-out infinite alternate;
+            }
+            .liq-bottom {
+                height: 22px;
+                background: linear-gradient(to right, #f39c12, #e67e22);
+                position: absolute;
+                bottom: 0;
+                left: 22px;
+                right: 22px;
+            }
+            .pressure-arrow {
+                position: absolute;
+                top: -24px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 18px;
+                color: red;
+                font-weight: bold;
+            }
+
+            /* Keyframes */
+            @keyframes move-constant {
+                0% {
+                    left: 0;
+                }
+                100% {
+                    left: calc(100% - 44px);
+                }
+            }
+            @keyframes accelerate {
+                0% {
+                    left: 0;
+                }
+                100% {
+                    left: calc(100% - 70px);
+                }
+            }
+            @keyframes stretch {
+                0% {
+                    width: 80px;
+                }
+                100% {
+                    width: 180px;
+                }
+            }
+            @keyframes fall {
+                0% {
+                    top: 0;
+                    left: 45%;
+                }
+                100% {
+                    top: calc(100% - 44px);
+                    left: 45%;
+                }
+            }
+            @keyframes oscillate {
+                0% {
+                    left: 0;
+                }
+                50% {
+                    left: calc(100% - 44px);
+                }
+                100% {
+                    left: 0;
+                }
+            }
+            @keyframes reaction-m1 {
+                0% {
+                    left: 0;
+                }
+                100% {
+                    left: 20%;
+                }
+            }
+            @keyframes reaction-m2 {
+                0% {
+                    left: 65%;
+                }
+                100% {
+                    left: 45%;
+                }
+            }
+            @keyframes equalize {
+                0% {
+                    height: 40px;
+                }
+                100% {
+                    height: 90px;
+                }
+            }
+            @keyframes mano-left {
+                0% {
+                    height: 60px;
+                }
+                100% {
+                    height: 90px;
+                }
+            }
+            @keyframes mano-right {
+                0% {
+                    height: 90px;
+                }
+                100% {
+                    height: 60px;
+                }
+            }
+
+            /* Elastic collision: m1 comes from left, m2 from right, they bounce */
+            @keyframes elastic1 {
+                0% {
+                    left: 2%;
+                }
+                38% {
+                    left: 44%;
+                }
+                40% {
+                    left: 44%;
+                }
+                78% {
+                    left: 2%;
+                }
+                100% {
+                    left: 2%;
+                }
+            }
+            @keyframes elastic2 {
+                0% {
+                    left: 54%;
+                }
+                38% {
+                    left: 54%;
+                }
+                40% {
+                    left: 54%;
+                }
+                78% {
+                    left: calc(100% - 48px);
+                }
+                100% {
+                    left: calc(100% - 48px);
+                }
+            }
+
+            /* Inelastic: m1 rolls in, sticks to m2, both roll together */
+            @keyframes inelastic1 {
+                0% {
+                    left: 2%;
+                }
+                40% {
+                    left: 44%;
+                }
+                100% {
+                    left: 64%;
+                }
+            }
+            @keyframes inelastic2 {
+                0% {
+                    left: 54%;
+                }
+                40% {
+                    left: 54%;
+                }
+                100% {
+                    left: 64%;
+                }
+            }
+
+            /* Rocket */
+            @keyframes rocket-fly {
+                0% {
+                    left: 10%;
+                    transform: rotate(0deg);
+                }
+                100% {
+                    left: 90%;
+                    transform: rotate(0deg);
+                }
+            }
+            @keyframes exhaust-move {
+                0% {
+                    left: 10%;
+                    opacity: 1;
+                }
+                100% {
+                    left: -10%;
+                    opacity: 0;
+                }
+            }
+
+            /* ── Modal ── */
+            #modal-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.55);
+                z-index: 1000;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                animation: fadeIn 0.2s ease;
+            }
+            #modal-overlay.open {
+                display: flex;
+            }
+
+            .modal-box {
+                background: white;
+                border-radius: 14px;
+                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+                max-width: 780px;
+                width: 100%;
+                max-height: 85vh;
+                display: flex;
+                flex-direction: column;
+                animation: modalIn 0.25s ease;
+            }
+            @keyframes modalIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px) scale(0.97);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+
+            .modal-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 18px 24px 14px;
+                border-bottom: 1px solid #e8f0fe;
+                flex-shrink: 0;
+            }
+            .modal-header h2 {
+                margin: 0;
+                color: var(--primary-dark);
+                font-size: 1.3rem;
+            }
+
+            .modal-close {
+                background: none;
+                border: none;
+                font-size: 1.6rem;
+                color: #999;
+                cursor: pointer;
+                line-height: 1;
+                padding: 0 4px;
+                transition: color 0.2s;
+            }
+            .modal-close:hover {
+                color: #333;
+            }
+
+            .modal-body {
+                overflow-y: auto;
+                padding: 20px 24px 24px;
+                flex: 1;
+            }
+
+            /* Sections hidden — content loaded into modal */
+            section {
+                display: none !important;
+            }
+
+            /* Responsive */
+            @media (max-width: 600px) {
+                .modal-box {
+                    max-height: 92vh;
+                    border-radius: 10px;
+                }
+                .section-btn {
+                    padding: 7px 12px;
+                    font-size: 0.78rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1 class="lang" key="title">Physics World</h1>
+            <nav>
+                <button class="translate" id="en">English</button>
+                <button class="translate" id="ru">Русский</button>
+                <button class="translate" id="ka">ქართული</button>
+            </nav>
+        </header>
+
+        <div class="section-nav">
+            <button
+                class="lang section-btn active"
+                key="btn_dynamics"
+                data-target="dynamics"
+            >
+                Dynamics
+            </button>
+            <button
+                class="lang section-btn"
+                key="btn_basic_concepts"
+                data-target="basic-concepts"
+            >
+                Concepts
+            </button>
+            <button
+                class="lang section-btn"
+                key="btn_newtons_laws"
+                data-target="newtons-laws"
+            >
+                Newton's Laws
+            </button>
+            <button
+                class="lang section-btn"
+                key="btn_hydrostatics"
+                data-target="hydrostatics"
+            >
+                Hydrostatics
+            </button>
+            <button
+                class="lang section-btn"
+                key="btn_formulas"
+                data-target="formulas"
+            >
+                Formulas
+            </button>
+            <button
+                class="lang section-btn"
+                key="btn_additional"
+                data-target="additional"
+            >
+                Additional
+            </button>
+            <button
+                class="lang section-btn"
+                key="btn_collisions"
+                data-target="collisions"
+            >
+                Collisions
+            </button>
+            <button
+                class="lang section-btn"
+                key="btn_reactive"
+                data-target="reactive"
+            >
+                Reactive Motion
+            </button>
+        </div>
+
+        <!-- ════════════════ MODAL ════════════════ -->
+        <div id="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h2 id="modal-title"></h2>
+                    <button class="modal-close" id="modal-close-btn">
+                        &times;
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-body"></div>
+            </div>
+        </div>
+
+        <!-- ════════════════ DYNAMICS ════════════════ -->
+        <section id="dynamics" class="active">
+            <h2 class="lang" key="dynamics_title">
+                Newton's Laws and Basics of Dynamics
+            </h2>
+            <p class="lang" key="dynamics_desc">
+                Dynamics is a branch of mechanics that studies the mechanical
+                motion of bodies, delving into the causes of its occurrence and
+                change. Unlike kinematics, which describes motion without
+                considering causes, dynamics considers forces as the source of
+                motion.
+            </p>
+        </section>
+
+        <!-- ════════════════ BASIC CONCEPTS ════════════════ -->
+        <section id="basic-concepts">
+            <h2 class="lang" key="basic_concepts">Basic Concepts</h2>
+            <ul>
+                <li class="lang" key="material_point">
+                    <strong>Material Point</strong>: A model of a body whose
+                    dimensions can be neglected. All mass is concentrated at one
+                    point.
+                </li>
+                <li class="lang" key="translational_motion">
+                    <strong>Translational Motion</strong>: Motion where any line
+                    fixed to the body stays parallel to itself. All points share
+                    the same velocity and acceleration.
+                </li>
+                <li class="lang" key="inertia">
+                    <strong>Inertia</strong>: The property of bodies to maintain
+                    their velocity (magnitude and direction) in the absence of
+                    external forces.
+                </li>
+            </ul>
+            <div class="animation-container">
+                <div class="ball" style="animation-name: move-constant"></div>
+            </div>
+            <p class="anim-label lang" key="anim_inertia">
+                Animation: Inertia — ball maintains speed without forces.
+            </p>
+        </section>
+
+        <!-- ════════════════ NEWTON'S LAWS ════════════════ -->
+        <section id="newtons-laws">
+            <h2 class="lang" key="newtons_laws">Newton's Laws</h2>
+            <p class="lang" key="newtons_intro">
+                Newton's laws are fundamental principles of classical mechanics
+                describing motion under forces. They apply to inertial reference
+                frames (IRF).
+            </p>
+
+            <h3 class="lang" key="first_law">First Law (Law of Inertia)</h3>
+            <p class="lang" key="first_law_desc">
+                In IRFs, a material point remains at rest or in uniform
+                rectilinear motion (\( \vec{v} = \mathrm{const} \)) when no net
+                force acts on it: \( \sum \vec{F} = 0 \).
+            </p>
+            <p class="lang" key="first_law_notes">
+                Earth is a good approximation of an IRF for local processes.
+                <strong>Galileo's Principle:</strong> In all IRFs, the laws of
+                mechanics are identical.
+            </p>
+            <div class="animation-container">
+                <div class="ball" style="animation-name: move-constant"></div>
+            </div>
+            <p class="anim-label lang" key="anim_desc1">
+                Animation: Ball in uniform motion (inertia).
+            </p>
+
+            <h3 class="lang" key="second_law">Second Law</h3>
+            <p class="lang" key="second_law_desc">
+                For a constant-mass point: \[ \sum \vec{F} = m \vec{a} \]
+                Acceleration is proportional to net force and inversely
+                proportional to mass.
+            </p>
+            <div class="animation-container">
+                <div class="car"></div>
+            </div>
+            <p class="anim-label lang" key="anim_desc2">
+                Animation: Car accelerating under force.
+            </p>
+
+            <h3 class="lang" key="third_law">Third Law</h3>
+            <p class="lang" key="third_law_desc">
+                Bodies interact with forces equal in magnitude and opposite in
+                direction: \[ \vec{F_1} = -\vec{F_2} \] The Earth attracts an
+                apple with the same force the apple attracts the Earth.
+            </p>
+            <div class="animation-container">
+                <div class="ball ball-m1">m₁</div>
+                <div class="ball ball-m2">m₂</div>
+            </div>
+            <p class="anim-label lang" key="anim_desc3">
+                Animation: Two bodies reacting to each other.
+            </p>
+        </section>
+
+        <!-- ════════════════ HYDROSTATICS ════════════════ -->
+        <section id="hydrostatics">
+            <h2 class="lang" key="hydrostatics_title">
+                Hydrostatics (Pressure)
+            </h2>
+            <p class="lang" key="hydrostatics_intro">
+                Covers pressure in fluids, Pascal's law, communicating vessels,
+                and mercury calculations — school physics grade 7.
+            </p>
+
+            <h3 class="lang" key="pressure_formula">Pressure</h3>
+            <p class="lang" key="pressure_desc">
+                \[ P = \frac{F}{S} = \frac{mg}{S} \]
+            </p>
+
+            <h3 class="lang" key="hydro_pressure">Hydrostatic Pressure</h3>
+            <p class="lang" key="hydro_pressure_desc">
+                \[ P = \rho g h \] where \(\rho\) is density, \(g \approx
+                9.8\,\text{m/s}^2\), \(h\) is depth.
+            </p>
+            <p class="lang" key="example_calc">
+                Mercury example (\(\rho = 13600\,\text{kg/m}^3,\; h =
+                0.746\,\text{m}\)): \[ P = 13600 \times 9.8 \times 0.746 \approx
+                10^5\,\text{Pa} \]
+            </p>
+            <p>
+                <strong
+                    >1 atm = 10⁵ Pa &nbsp;|&nbsp; 1 mmHg = 133.3 Pa
+                    &nbsp;|&nbsp; 760 mmHg ≈ 1 atm</strong
+                >
+            </p>
+
+            <h3 class="lang" key="pascal_law">Pascal's Law</h3>
+            <p class="lang" key="pascal_desc">
+                Pressure applied to a fluid in a closed container is transmitted
+                equally in all directions. In a hydraulic press:
+                \(\dfrac{F_1}{S_1} = \dfrac{F_2}{S_2}\).
+            </p>
+
+            <h3 class="lang" key="communicating_vessels">
+                Communicating Vessels
+            </h3>
+            <p class="lang" key="vessels_desc">
+                Homogeneous liquid reaches the same level in all connected
+                vessels. For different liquids: \(\rho_1 g h_1 = \rho_2 g h_2\).
+            </p>
+            <div class="vessel-wrapper">
+                <div class="vessel"><div class="liquid"></div></div>
+                <div class="vessel-connector"></div>
+                <div class="vessel"><div class="liquid liquid-rev"></div></div>
+            </div>
+            <p class="anim-label lang" key="anim_vessels">
+                Animation: Level equalization in communicating vessels.
+            </p>
+
+            <h3 class="lang" key="manometer">Manometer</h3>
+            <p class="lang" key="manometer_desc">
+                U-tube with mercury: \(P = P_0 + \rho g \Delta h\). At \(h =
+                0.76\,\text{m}\): \(P \approx 101325\,\text{Pa}\) (1 atm).
+            </p>
+            <div class="manometer-wrap">
+                <div class="manometer">
+                    <div class="pressure-arrow">↓ P</div>
+                    <div class="liq-bottom"></div>
+                    <div class="liq-left"></div>
+                    <div class="liq-right"></div>
+                </div>
+            </div>
+            <p class="anim-label lang" key="anim_manometer">
+                Animation: Mercury manometer showing pressure difference.
+            </p>
+        </section>
+
+        <!-- ════════════════ FORMULAS ════════════════ -->
+        <section id="formulas">
+            <h2 class="lang" key="school_formulas">Formulas — Grades 7–10</h2>
+
+            <h3 class="lang" key="class7">
+                Grade 7 — Kinematics, Density, Pressure, Forces
+            </h3>
+            <ul>
+                <li class="lang" key="speed">
+                    <strong>Speed:</strong> \( v = \dfrac{s}{t} \)
+                </li>
+                <li class="lang" key="acceleration_f">
+                    <strong>Acceleration:</strong> \( a = \dfrac{\Delta
+                    v}{\Delta t} \)
+                </li>
+                <li class="lang" key="density">
+                    <strong>Density:</strong> \( \rho = \dfrac{m}{V} \)
+                </li>
+                <li class="lang" key="pressure_f">
+                    <strong>Pressure:</strong> \( p = \dfrac{F}{S} \)
+                </li>
+                <li class="lang" key="hydro_p">
+                    <strong>Hydrostatic Pressure:</strong> \( p = \rho g h \)
+                </li>
+                <li class="lang" key="archimedes">
+                    <strong>Archimedes' Force:</strong> \( F_A =
+                    \rho_{\text{liq}} g V_{\text{sub}} \)
+                </li>
+                <li class="lang" key="gravity_force">
+                    <strong>Gravity:</strong> \( F_g = mg \)
+                </li>
+                <li class="lang" key="hooke">
+                    <strong>Hooke's Law:</strong> \( F = -k\,\Delta l \)
+                </li>
+            </ul>
+            <div class="animation-container"><div class="spring"></div></div>
+            <p class="anim-label lang" key="anim_hooke">
+                Animation: Spring stretching (Hooke's Law).
+            </p>
+
+            <h3 class="lang" key="class8">
+                Grade 8 — Thermal Phenomena, Electricity Basics
+            </h3>
+            <ul>
+                <li class="lang" key="heat_quantity">
+                    <strong>Heat:</strong> \( Q = cm\Delta T \)
+                </li>
+                <li class="lang" key="melting_heat">
+                    <strong>Melting heat:</strong> \( Q = \lambda m \)
+                </li>
+                <li class="lang" key="vapor_heat">
+                    <strong>Vaporization heat:</strong> \( Q = rm \)
+                </li>
+                <li class="lang" key="joule_lenz">
+                    <strong>Joule–Lenz:</strong> \( Q = I^2 R t \)
+                </li>
+                <li class="lang" key="current_strength">
+                    <strong>Current:</strong> \( I = \dfrac{q}{t} \)
+                </li>
+                <li class="lang" key="ohm_law">
+                    <strong>Ohm's Law:</strong> \( I = \dfrac{U}{R} \)
+                </li>
+            </ul>
+
+            <h3 class="lang" key="class9">
+                Grade 9 — Dynamics, Energy, Momentum, Gravity
+            </h3>
+            <ul>
+                <li class="lang" key="momentum">
+                    <strong>Momentum:</strong> \( \vec{p} = m\vec{v} \)
+                </li>
+                <li class="lang" key="momentum_change">
+                    <strong>Impulse:</strong> \( \Delta\vec{p} = \vec{F}\,\Delta
+                    t \)
+                </li>
+                <li class="lang" key="momentum_conservation">
+                    <strong>Conservation of momentum:</strong> \( \sum\vec{p}_1
+                    = \sum\vec{p}_2 \)
+                </li>
+                <li class="lang" key="kinetic_energy">
+                    <strong>Kinetic energy:</strong> \( E_k = \dfrac{mv^2}{2} \)
+                </li>
+                <li class="lang" key="potential_energy">
+                    <strong>Potential energy:</strong> \( E_p = mgh \)
+                </li>
+                <li class="lang" key="energy_conservation">
+                    <strong>Conservation of energy:</strong> \( E_{k1} + E_{p1}
+                    = E_{k2} + E_{p2} \)
+                </li>
+                <li class="lang" key="power">
+                    <strong>Power:</strong> \( N = \dfrac{A}{t},\quad A =
+                    Fs\cos\alpha \)
+                </li>
+                <li class="lang" key="gravity_law">
+                    <strong>Universal Gravitation:</strong> \( F = G\dfrac{m_1
+                    m_2}{r^2},\quad G =
+                    6.67\times10^{-11}\,\text{N·m}^2/\text{kg}^2 \)
+                </li>
+            </ul>
+            <div class="animation-container">
+                <div
+                    class="ball"
+                    style="
+                        animation-name: fall;
+                        animation-duration: 2s;
+                        animation-timing-function: ease-in;
+                    "
+                ></div>
+            </div>
+            <p class="anim-label lang" key="anim_gravity">
+                Animation: Free fall under gravity.
+            </p>
+
+            <h3 class="lang" key="class10">
+                Grade 10 — Electrostatics, Magnetism, Optics, Oscillations
+            </h3>
+            <ul>
+                <li class="lang" key="coulomb">
+                    <strong>Coulomb's Force:</strong> \( F = k\dfrac{q_1
+                    q_2}{r^2},\quad k = 9\times10^9 \)
+                </li>
+                <li class="lang" key="electric_field">
+                    <strong>Electric field:</strong> \( \vec{E} =
+                    \dfrac{\vec{F}}{q} \)
+                </li>
+                <li class="lang" key="potential">
+                    <strong>Potential:</strong> \( \varphi = \dfrac{A}{q} \)
+                </li>
+                <li class="lang" key="capacitance">
+                    <strong>Capacitance:</strong> \( C = \dfrac{q}{U} \)
+                </li>
+                <li class="lang" key="ampere_force">
+                    <strong>Ampere force:</strong> \( F = BIl\sin\alpha \)
+                </li>
+                <li class="lang" key="lorentz_force">
+                    <strong>Lorentz force:</strong> \( \vec{F} =
+                    q[\vec{v}\times\vec{B}] \)
+                </li>
+                <li class="lang" key="faraday">
+                    <strong>Faraday's law:</strong> \( \mathcal{E} =
+                    -\dfrac{\Delta\Phi}{\Delta t},\quad \Phi = BS\cos\alpha \)
+                </li>
+                <li class="lang" key="pendulum_period">
+                    <strong>Pendulum period:</strong> \( T =
+                    2\pi\sqrt{\dfrac{l}{g}} \)
+                </li>
+                <li class="lang" key="spring_period">
+                    <strong>Spring pendulum:</strong> \( T =
+                    2\pi\sqrt{\dfrac{m}{k}} \)
+                </li>
+                <li class="lang" key="refraction_law">
+                    <strong>Refraction:</strong> \( \dfrac{\sin i}{\sin r} = n
+                    \)
+                </li>
+                <li class="lang" key="lens_formula">
+                    <strong>Thin lens:</strong> \( \dfrac{1}{d} + \dfrac{1}{f} =
+                    \dfrac{1}{F} \)
+                </li>
+            </ul>
+        </section>
+
+        <!-- ════════════════ ADDITIONAL ════════════════ -->
+        <section id="additional">
+            <h2 class="lang" key="additional_sections">Additional Sections</h2>
+
+            <h3 class="lang" key="reactive_energy">Reactive Energy</h3>
+            <p class="lang" key="reactive_energy_desc">
+                In AC circuits, reactive energy is related to phase shift
+                between current and voltage: \( Q = UI\sin\phi \). It circulates
+                between source and load without doing useful work.
+            </p>
+            <div class="animation-container">
+                <div class="reactive-energy"></div>
+            </div>
+            <p class="anim-label lang" key="anim_reactive">
+                Animation: Oscillating reactive energy.
+            </p>
+
+            <h3 class="lang" key="elasticity">Elasticity (დრეკადობა)</h3>
+            <p class="lang" key="elasticity_desc">
+                Elasticity is the property of materials to return to their
+                original shape after deformation. Hooke's law: \( F = -kx \).
+                Elastic potential energy: \( E = \dfrac{1}{2}kx^2 \).
+            </p>
+            <div class="animation-container"><div class="spring"></div></div>
+            <p class="anim-label lang" key="anim_elasticity">
+                Animation: Elastic spring deformation.
+            </p>
+        </section>
+
+        <!-- ════════════════ COLLISIONS ════════════════ -->
+        <section id="collisions">
+            <h2 class="lang" key="collisions_title">
+                Collisions (დრეკადობა / Столкновения)
+            </h2>
+            <p class="lang" key="collisions_intro">
+                When two bodies collide, the law of conservation of momentum
+                always holds: \[ m_1\vec{v}_1 + m_2\vec{v}_2 = m_1\vec{v}_1' +
+                m_2\vec{v}_2' \]
+            </p>
+
+            <h3 class="lang" key="elastic_title">
+                Elastic Collision (Упругий удар)
+            </h3>
+            <p class="lang" key="elastic_desc">
+                Both momentum AND kinetic energy are conserved. The balls bounce
+                off each other. If equal masses: they exchange velocities
+                completely.
+            </p>
+            <p>
+                \[ \frac{m_1 v_1^2}{2} + \frac{m_2 v_2^2}{2} = \frac{m_1
+                v_1'^2}{2} + \frac{m_2 v_2'^2}{2} \]
+            </p>
+            <!-- Elastic collision animation -->
+            <div class="animation-container" style="height: 120px">
+                <div
+                    id="ball-e1"
+                    style="
+                        width: 44px;
+                        height: 44px;
+                        background: radial-gradient(
+                            circle at 30% 30%,
+                            #ff4d4d,
+                            #b30000
+                        );
+                        border-radius: 50%;
+                        position: absolute;
+                        top: 38px;
+                        animation: elastic1 3s infinite;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 11px;
+                        font-weight: bold;
+                    "
+                >
+                    m₁
+                </div>
+                <div
+                    id="ball-e2"
+                    style="
+                        width: 44px;
+                        height: 44px;
+                        background: radial-gradient(
+                            circle at 30% 30%,
+                            #3399ff,
+                            #0055cc
+                        );
+                        border-radius: 50%;
+                        position: absolute;
+                        top: 38px;
+                        animation: elastic2 3s infinite;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 11px;
+                        font-weight: bold;
+                    "
+                >
+                    m₂
+                </div>
+            </div>
+            <p class="anim-label lang" key="anim_elastic">
+                Animation: Elastic collision — balls bounce off each other.
+            </p>
+
+            <h3 class="lang" key="inelastic_title">
+                Perfectly Inelastic Collision (Неупругий удар)
+            </h3>
+            <p class="lang" key="inelastic_desc">
+                The bodies stick together and move as one. Momentum is
+                conserved, but kinetic energy is partially lost (converted to
+                heat/deformation).
+            </p>
+            <p>
+                \[ m_1 v_1 + m_2 v_2 = (m_1 + m_2)\,v' \quad\Rightarrow\quad v'
+                = \frac{m_1 v_1 + m_2 v_2}{m_1 + m_2} \]
+            </p>
+            <!-- Inelastic collision animation -->
+            <div class="animation-container" style="height: 120px">
+                <div
+                    id="ball-i1"
+                    style="
+                        width: 44px;
+                        height: 44px;
+                        background: radial-gradient(
+                            circle at 30% 30%,
+                            #ff9900,
+                            #cc6600
+                        );
+                        border-radius: 50%;
+                        position: absolute;
+                        top: 38px;
+                        animation: inelastic1 3.5s infinite;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 11px;
+                        font-weight: bold;
+                    "
+                >
+                    m₁
+                </div>
+                <div
+                    id="ball-i2"
+                    style="
+                        width: 44px;
+                        height: 44px;
+                        background: radial-gradient(
+                            circle at 30% 30%,
+                            #33cc66,
+                            #007733
+                        );
+                        border-radius: 50%;
+                        position: absolute;
+                        top: 38px;
+                        animation: inelastic2 3.5s infinite;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 11px;
+                        font-weight: bold;
+                    "
+                >
+                    m₂
+                </div>
+            </div>
+            <p class="anim-label lang" key="anim_inelastic">
+                Animation: Inelastic collision — balls stick together and move
+                as one.
+            </p>
+
+            <h3 class="lang" key="elasticity_h">Elasticity (დრეკადობა)</h3>
+            <p class="lang" key="elasticity_desc2">
+                Elasticity is the property of a body to return to its original
+                shape after deformation is removed. Described by Hooke's law: \(
+                F = -kx \). The elastic potential energy stored: \[ E_{el} =
+                \frac{1}{2}kx^2 \]
+            </p>
+            <div class="animation-container"><div class="spring"></div></div>
+            <p class="anim-label lang" key="anim_elastic2">
+                Animation: Spring deformation and recovery (დრეკადობა).
+            </p>
+        </section>
+
+        <!-- ════════════════ REACTIVE MOTION ════════════════ -->
+        <section id="reactive">
+            <h2 class="lang" key="reactive_title">
+                Reactive Motion (Реактивное движение)
+            </h2>
+            <p class="lang" key="reactive_intro">
+                Reactive motion occurs when a body ejects part of its mass — the
+                reaction force propels the body forward. No external force
+                needed. Examples: rockets, jet engines, squid.
+            </p>
+
+            <h3 class="lang" key="tsiolkovsky_title">
+                Tsiolkovsky's Formula (Формула Циолковского)
+            </h3>
+            <p class="lang" key="tsiolkovsky_desc">
+                The velocity gained by a rocket depends on the exhaust velocity
+                and the mass ratio:
+            </p>
+            <p>\[ \Delta v = u \ln\frac{m_0}{m_k} \]</p>
+            <p class="lang" key="tsiolkovsky_vars">
+                where \(u\) — exhaust gas velocity, \(m_0\) — initial mass (with
+                fuel), \(m_k\) — final mass (without fuel).
+            </p>
+
+            <h3 class="lang" key="reactive_momentum">
+                Conservation of Momentum
+            </h3>
+            <p class="lang" key="reactive_momentum_desc">
+                Initially the system is at rest: \(\vec{p} = 0\). After ejecting
+                gas:
+            </p>
+            <p>
+                \[ m_{\text{rocket}}\,\vec{v}_{\text{rocket}} +
+                m_{\text{gas}}\,\vec{v}_{\text{gas}} = 0 \]
+            </p>
+            <p class="lang" key="reactive_momentum_note">
+                The rocket and exhaust move in opposite directions — total
+                momentum stays zero.
+            </p>
+
+            <!-- Rocket animation -->
+            <div
+                class="animation-container"
+                style="height: 140px; position: relative; overflow: hidden"
+            >
+                <div
+                    style="
+                        position: absolute;
+                        bottom: 20px;
+                        animation: rocket-fly 3s ease-in infinite;
+                        font-size: 36px;
+                        left: 10%;
+                    "
+                >
+                    🚀
+                </div>
+                <div
+                    style="
+                        position: absolute;
+                        bottom: 20px;
+                        animation: exhaust-move 3s ease-in infinite;
+                        font-size: 18px;
+                        left: 10%;
+                    "
+                >
+                    💨
+                </div>
+            </div>
+            <p class="anim-label lang" key="anim_rocket">
+                Animation: Rocket ejects gas backward, moves forward.
+            </p>
+
+            <h3 class="lang" key="reactive_examples_title">
+                Examples in Nature & Tech
+            </h3>
+            <ul>
+                <li class="lang" key="reactive_ex1">
+                    🚀 <strong>Rocket / Space launch</strong> — combustion gases
+                    ejected downward
+                </li>
+                <li class="lang" key="reactive_ex2">
+                    ✈️ <strong>Jet aircraft</strong> — hot gases ejected
+                    backward
+                </li>
+                <li class="lang" key="reactive_ex3">
+                    🦑 <strong>Squid / Octopus</strong> — ejects water to move
+                </li>
+                <li class="lang" key="reactive_ex4">
+                    🎈 <strong>Balloon</strong> — air escapes, balloon flies
+                    opposite direction
+                </li>
+            </ul>
+        </section>
+
+        <script>
+            const arrLang = {
+                en: {
+                    title: "Physics World",
+                    btn_dynamics: "Dynamics",
+                    btn_basic_concepts: "Concepts",
+                    btn_newtons_laws: "Newton's Laws",
+                    btn_hydrostatics: "Hydrostatics",
+                    btn_formulas: "Formulas (7–10)",
+                    btn_additional: "Additional",
+                    btn_collisions: "Collisions",
+                    btn_reactive: "Reactive Motion",
+                    dynamics_title: "Newton's Laws and Basics of Dynamics",
+                    dynamics_desc:
+                        "Dynamics is a branch of mechanics that studies the mechanical motion of bodies, delving into the causes of its occurrence and change. Unlike kinematics, which describes motion without considering causes, dynamics considers forces as the source of motion.",
+                    basic_concepts: "Basic Concepts",
+                    material_point:
+                        "<strong>Material Point</strong>: A model of a body whose dimensions can be neglected. All mass is concentrated at one point.",
+                    translational_motion:
+                        "<strong>Translational Motion</strong>: Motion where any line fixed to the body stays parallel to itself. All points share the same velocity and acceleration.",
+                    inertia:
+                        "<strong>Inertia</strong>: The property of bodies to maintain their velocity (magnitude and direction) in the absence of external forces.",
+                    anim_inertia:
+                        "Animation: Inertia — ball maintains speed without forces.",
+                    newtons_laws: "Newton's Laws",
+                    newtons_intro:
+                        "Newton's laws are fundamental principles of classical mechanics describing motion under forces. They apply to inertial reference frames (IRF).",
+                    first_law: "First Law (Law of Inertia)",
+                    first_law_desc:
+                        "In IRFs, a material point remains at rest or in uniform rectilinear motion (\\( \\vec{v} = \\mathrm{const} \\)) when no net force acts on it: \\( \\sum \\vec{F} = 0 \\).",
+                    first_law_notes:
+                        "Earth is a good approximation of an IRF for local processes. <strong>Galileo's Principle:</strong> In all IRFs, the laws of mechanics are identical.",
+                    anim_desc1: "Animation: Ball in uniform motion (inertia).",
+                    second_law: "Second Law",
+                    second_law_desc:
+                        "For a constant-mass point: \\[ \\sum \\vec{F} = m \\vec{a} \\] Acceleration is proportional to net force and inversely proportional to mass.",
+                    anim_desc2: "Animation: Car accelerating under force.",
+                    third_law: "Third Law",
+                    third_law_desc:
+                        "Bodies interact with forces equal in magnitude and opposite in direction: \\[ \\vec{F_1} = -\\vec{F_2} \\]",
+                    anim_desc3: "Animation: Two bodies reacting to each other.",
+                    hydrostatics_title: "Hydrostatics (Pressure)",
+                    hydrostatics_intro:
+                        "Covers pressure in fluids, Pascal's law, communicating vessels, and mercury calculations — school physics grade 7.",
+                    pressure_formula: "Pressure",
+                    pressure_desc: "\\[ P = \\frac{F}{S} = \\frac{mg}{S} \\]",
+                    hydro_pressure: "Hydrostatic Pressure",
+                    hydro_pressure_desc:
+                        "\\[ P = \\rho g h \\] where \\(\\rho\\) is density, \\(g \\approx 9.8\\,\\text{m/s}^2\\), \\(h\\) is depth.",
+                    example_calc:
+                        "Mercury example (\\(\\rho = 13600\\,\\text{kg/m}^3,\\; h = 0.746\\,\\text{m}\\)): \\[ P = 13600 \\times 9.8 \\times 0.746 \\approx 10^5\\,\\text{Pa} \\]",
+                    pascal_law: "Pascal's Law",
+                    pascal_desc:
+                        "Pressure applied to a fluid in a closed container is transmitted equally in all directions. In a hydraulic press: \\(\\dfrac{F_1}{S_1} = \\dfrac{F_2}{S_2}\\).",
+                    communicating_vessels: "Communicating Vessels",
+                    vessels_desc:
+                        "Homogeneous liquid reaches the same level in all connected vessels. For different liquids: \\(\\rho_1 g h_1 = \\rho_2 g h_2\\).",
+                    anim_vessels:
+                        "Animation: Level equalization in communicating vessels.",
+                    manometer: "Manometer",
+                    manometer_desc:
+                        "U-tube with mercury: \\(P = P_0 + \\rho g \\Delta h\\). At \\(h = 0.76\\,\\text{m}\\): \\(P \\approx 101325\\,\\text{Pa}\\) (1 atm).",
+                    anim_manometer:
+                        "Animation: Mercury manometer showing pressure difference.",
+                    school_formulas: "Formulas — Grades 7–10",
+                    class7: "Grade 7 — Kinematics, Density, Pressure, Forces",
+                    speed: "<strong>Speed:</strong> \\( v = \\dfrac{s}{t} \\)",
+                    acceleration_f:
+                        "<strong>Acceleration:</strong> \\( a = \\dfrac{\\Delta v}{\\Delta t} \\)",
+                    density:
+                        "<strong>Density:</strong> \\( \\rho = \\dfrac{m}{V} \\)",
+                    pressure_f:
+                        "<strong>Pressure:</strong> \\( p = \\dfrac{F}{S} \\)",
+                    hydro_p:
+                        "<strong>Hydrostatic Pressure:</strong> \\( p = \\rho g h \\)",
+                    archimedes:
+                        "<strong>Archimedes' Force:</strong> \\( F_A = \\rho_{\\text{liq}} g V_{\\text{sub}} \\)",
+                    gravity_force: "<strong>Gravity:</strong> \\( F_g = mg \\)",
+                    hooke: "<strong>Hooke's Law:</strong> \\( F = -k\\,\\Delta l \\)",
+                    anim_hooke: "Animation: Spring stretching (Hooke's Law).",
+                    class8: "Grade 8 — Thermal Phenomena, Electricity Basics",
+                    heat_quantity:
+                        "<strong>Heat:</strong> \\( Q = cm\\Delta T \\)",
+                    melting_heat:
+                        "<strong>Melting heat:</strong> \\( Q = \\lambda m \\)",
+                    vapor_heat:
+                        "<strong>Vaporization heat:</strong> \\( Q = rm \\)",
+                    joule_lenz:
+                        "<strong>Joule–Lenz:</strong> \\( Q = I^2 R t \\)",
+                    current_strength:
+                        "<strong>Current:</strong> \\( I = \\dfrac{q}{t} \\)",
+                    ohm_law:
+                        "<strong>Ohm's Law:</strong> \\( I = \\dfrac{U}{R} \\)",
+                    class9: "Grade 9 — Dynamics, Energy, Momentum, Gravity",
+                    momentum:
+                        "<strong>Momentum:</strong> \\( \\vec{p} = m\\vec{v} \\)",
+                    momentum_change:
+                        "<strong>Impulse:</strong> \\( \\Delta\\vec{p} = \\vec{F}\\,\\Delta t \\)",
+                    momentum_conservation:
+                        "<strong>Conservation of momentum:</strong> \\( \\sum\\vec{p}_1 = \\sum\\vec{p}_2 \\)",
+                    kinetic_energy:
+                        "<strong>Kinetic energy:</strong> \\( E_k = \\dfrac{mv^2}{2} \\)",
+                    potential_energy:
+                        "<strong>Potential energy:</strong> \\( E_p = mgh \\)",
+                    energy_conservation:
+                        "<strong>Conservation of energy:</strong> \\( E_{k1} + E_{p1} = E_{k2} + E_{p2} \\)",
+                    power: "<strong>Power:</strong> \\( N = \\dfrac{A}{t},\\quad A = Fs\\cos\\alpha \\)",
+                    gravity_law:
+                        "<strong>Universal Gravitation:</strong> \\( F = G\\dfrac{m_1 m_2}{r^2},\\quad G = 6.67\\times10^{-11} \\)",
+                    anim_gravity: "Animation: Free fall under gravity.",
+                    class10:
+                        "Grade 10 — Electrostatics, Magnetism, Optics, Oscillations",
+                    coulomb:
+                        "<strong>Coulomb's Force:</strong> \\( F = k\\dfrac{q_1 q_2}{r^2} \\)",
+                    electric_field:
+                        "<strong>Electric field:</strong> \\( \\vec{E} = \\dfrac{\\vec{F}}{q} \\)",
+                    potential:
+                        "<strong>Potential:</strong> \\( \\varphi = \\dfrac{A}{q} \\)",
+                    capacitance:
+                        "<strong>Capacitance:</strong> \\( C = \\dfrac{q}{U} \\)",
+                    ampere_force:
+                        "<strong>Ampere force:</strong> \\( F = BIl\\sin\\alpha \\)",
+                    lorentz_force:
+                        "<strong>Lorentz force:</strong> \\( \\vec{F} = q[\\vec{v}\\times\\vec{B}] \\)",
+                    faraday:
+                        "<strong>Faraday's law:</strong> \\( \\mathcal{E} = -\\dfrac{\\Delta\\Phi}{\\Delta t} \\)",
+                    pendulum_period:
+                        "<strong>Pendulum period:</strong> \\( T = 2\\pi\\sqrt{\\dfrac{l}{g}} \\)",
+                    spring_period:
+                        "<strong>Spring pendulum:</strong> \\( T = 2\\pi\\sqrt{\\dfrac{m}{k}} \\)",
+                    refraction_law:
+                        "<strong>Refraction:</strong> \\( \\dfrac{\\sin i}{\\sin r} = n \\)",
+                    lens_formula:
+                        "<strong>Thin lens:</strong> \\( \\dfrac{1}{d} + \\dfrac{1}{f} = \\dfrac{1}{F} \\)",
+                    additional_sections: "Additional Sections",
+                    reactive_energy: "Reactive Energy (AC)",
+                    reactive_energy_desc:
+                        "In AC circuits, reactive energy is related to phase shift: \\( Q = UI\\sin\\phi \\). It circulates between source and load without doing useful work.",
+                    anim_reactive: "Animation: Oscillating reactive energy.",
+                    elasticity: "Elasticity (დრეკადობა)",
+                    elasticity_desc:
+                        "Property of materials to return to original shape after deformation. \\( F = -kx \\), \\( E = \\dfrac{1}{2}kx^2 \\).",
+                    anim_elasticity: "Animation: Elastic spring deformation.",
+                    collisions_title: "Collisions & Elasticity (დრეკადობა)",
+                    collisions_intro:
+                        "When two bodies collide, the law of conservation of momentum always holds.",
+                    elastic_title: "Elastic Collision",
+                    elastic_desc:
+                        "Both momentum AND kinetic energy are conserved. The balls bounce off each other. If equal masses: they exchange velocities completely.",
+                    anim_elastic:
+                        "Animation: Elastic collision — balls bounce off each other.",
+                    inelastic_title: "Perfectly Inelastic Collision",
+                    inelastic_desc:
+                        "The bodies stick together and move as one. Momentum is conserved, kinetic energy is partially lost.",
+                    anim_inelastic:
+                        "Animation: Inelastic collision — balls stick together and move as one.",
+                    elasticity_h: "Elasticity (დრეკადობა)",
+                    elasticity_desc2:
+                        "Elasticity is the property of a body to return to its original shape after deformation is removed. Described by Hooke's law: \\( F = -kx \\). Elastic potential energy stored:",
+                    anim_elastic2:
+                        "Animation: Spring deformation and recovery.",
+                    reactive_title: "Reactive Motion",
+                    reactive_intro:
+                        "Reactive motion occurs when a body ejects part of its mass — the reaction force propels the body forward. No external force needed.",
+                    tsiolkovsky_title: "Tsiolkovsky's Formula",
+                    tsiolkovsky_desc:
+                        "The velocity gained by a rocket depends on exhaust velocity and mass ratio:",
+                    tsiolkovsky_vars:
+                        "where \\(u\\) — exhaust gas velocity, \\(m_0\\) — initial mass (with fuel), \\(m_k\\) — final mass (without fuel).",
+                    reactive_momentum: "Conservation of Momentum",
+                    reactive_momentum_desc:
+                        "Initially the system is at rest: \\(\\vec{p} = 0\\). After ejecting gas:",
+                    reactive_momentum_note:
+                        "The rocket and exhaust move in opposite directions — total momentum stays zero.",
+                    anim_rocket:
+                        "Animation: Rocket ejects gas backward, moves forward.",
+                    reactive_examples_title: "Examples in Nature & Tech",
+                    reactive_ex1:
+                        "🚀 <strong>Rocket / Space launch</strong> — combustion gases ejected downward",
+                    reactive_ex2:
+                        "✈️ <strong>Jet aircraft</strong> — hot gases ejected backward",
+                    reactive_ex3:
+                        "🦑 <strong>Squid / Octopus</strong> — ejects water to move",
+                    reactive_ex4:
+                        "🎈 <strong>Balloon</strong> — air escapes, balloon flies opposite direction",
+                },
+                ru: {
+                    title: "Мир Физики",
+                    btn_dynamics: "Динамика",
+                    btn_basic_concepts: "Понятия",
+                    btn_newtons_laws: "Законы Ньютона",
+                    btn_hydrostatics: "Гидростатика",
+                    btn_formulas: "Формулы (7–10)",
+                    btn_additional: "Дополнительно",
+                    btn_collisions: "Столкновения",
+                    btn_reactive: "Реактивное движение",
+                    dynamics_title: "Законы Ньютона и основы динамики",
+                    dynamics_desc:
+                        "Динамика — раздел механики, изучающий причины возникновения и изменения механического движения тел. В отличие от кинематики, динамика рассматривает силы как источник движения.",
+                    basic_concepts: "Основные понятия",
+                    material_point:
+                        "<strong>Материальная точка</strong>: Модель тела, размерами которого пренебрегают. Вся масса сосредоточена в одной точке.",
+                    translational_motion:
+                        "<strong>Поступательное движение</strong>: Движение, при котором любая прямая, жёстко связанная с телом, остаётся параллельной себе. Все точки имеют одинаковое ускорение.",
+                    inertia:
+                        "<strong>Инерция</strong>: Свойство тел сохранять скорость (по величине и направлению) при отсутствии внешних сил.",
+                    anim_inertia:
+                        "Анимация: Инерция — мяч сохраняет скорость без сил.",
+                    newtons_laws: "Законы Ньютона",
+                    newtons_intro:
+                        "Законы Ньютона — фундаментальные принципы классической механики для инерциальных систем отсчёта (ИСО).",
+                    first_law: "Первый закон (закон инерции)",
+                    first_law_desc:
+                        "В ИСО материальная точка покоится или движется равномерно прямолинейно (\\( \\vec{v} = \\mathrm{const} \\)), если \\( \\sum \\vec{F} = 0 \\).",
+                    first_law_notes:
+                        "Земля — хорошее приближение ИСО для локальных задач. <strong>Принцип Галилея:</strong> Законы механики одинаковы во всех ИСО.",
+                    anim_desc1:
+                        "Анимация: Мяч в равномерном движении (инерция).",
+                    second_law: "Второй закон",
+                    second_law_desc:
+                        "Для точки постоянной массы: \\[ \\sum \\vec{F} = m \\vec{a} \\]",
+                    anim_desc2:
+                        "Анимация: Машина ускоряется под действием силы.",
+                    third_law: "Третий закон",
+                    third_law_desc:
+                        "Тела взаимодействуют силами равными по модулю, противоположными по направлению: \\[ \\vec{F_1} = -\\vec{F_2} \\]",
+                    anim_desc3: "Анимация: Два тела реагируют друг на друга.",
+                    hydrostatics_title: "Гидростатика (Давление)",
+                    hydrostatics_intro:
+                        "Давление в жидкостях, закон Паскаля, сообщающиеся сосуды, расчёты с ртутью — школьная физика, 7 класс.",
+                    pressure_formula: "Давление",
+                    pressure_desc: "\\[ P = \\frac{F}{S} = \\frac{mg}{S} \\]",
+                    hydro_pressure: "Гидростатическое давление",
+                    hydro_pressure_desc:
+                        "\\[ P = \\rho g h \\] где \\(\\rho\\) — плотность, \\(g \\approx 9.8\\,\\text{м/с}^2\\), \\(h\\) — глубина.",
+                    example_calc:
+                        "Пример (ртуть, \\(\\rho = 13600\\), \\(h = 0.746\\,\\text{м}\\)): \\[ P \\approx 10^5\\,\\text{Па} \\]",
+                    pascal_law: "Закон Паскаля",
+                    pascal_desc:
+                        "Давление передаётся во все точки жидкости одинаково. В гидравлическом прессе: \\(\\dfrac{F_1}{S_1} = \\dfrac{F_2}{S_2}\\).",
+                    communicating_vessels: "Сообщающиеся сосуды",
+                    vessels_desc:
+                        "Уровень однородной жидкости одинаков. Для разных жидкостей: \\(\\rho_1 g h_1 = \\rho_2 g h_2\\).",
+                    anim_vessels:
+                        "Анимация: Выравнивание уровней в сообщающихся сосудах.",
+                    manometer: "Манометр",
+                    manometer_desc:
+                        "U-образная трубка с ртутью: \\(P = P_0 + \\rho g \\Delta h\\). При \\(h = 0.76\\,\\text{м}\\): \\(P \\approx 101325\\,\\text{Па}\\).",
+                    anim_manometer:
+                        "Анимация: Ртутный манометр — разность уровней.",
+                    school_formulas: "Формулы — 7–10 класс",
+                    class7: "7 класс — Кинематика, плотность, давление, силы",
+                    speed: "<strong>Скорость:</strong> \\( v = \\dfrac{s}{t} \\)",
+                    acceleration_f:
+                        "<strong>Ускорение:</strong> \\( a = \\dfrac{\\Delta v}{\\Delta t} \\)",
+                    density:
+                        "<strong>Плотность:</strong> \\( \\rho = \\dfrac{m}{V} \\)",
+                    pressure_f:
+                        "<strong>Давление:</strong> \\( p = \\dfrac{F}{S} \\)",
+                    hydro_p:
+                        "<strong>Гидростатическое давление:</strong> \\( p = \\rho g h \\)",
+                    archimedes:
+                        "<strong>Сила Архимеда:</strong> \\( F_A = \\rho_{\\text{ж}} g V_{\\text{погр}} \\)",
+                    gravity_force:
+                        "<strong>Сила тяжести:</strong> \\( F_g = mg \\)",
+                    hooke: "<strong>Закон Гука:</strong> \\( F = -k\\,\\Delta l \\)",
+                    anim_hooke: "Анимация: Пружина (закон Гука).",
+                    class8: "8 класс — Тепловые явления, электричество",
+                    heat_quantity:
+                        "<strong>Теплота:</strong> \\( Q = cm\\Delta T \\)",
+                    melting_heat:
+                        "<strong>Теплота плавления:</strong> \\( Q = \\lambda m \\)",
+                    vapor_heat:
+                        "<strong>Теплота парообразования:</strong> \\( Q = rm \\)",
+                    joule_lenz:
+                        "<strong>Закон Джоуля–Ленца:</strong> \\( Q = I^2 R t \\)",
+                    current_strength:
+                        "<strong>Сила тока:</strong> \\( I = \\dfrac{q}{t} \\)",
+                    ohm_law:
+                        "<strong>Закон Ома:</strong> \\( I = \\dfrac{U}{R} \\)",
+                    class9: "9 класс — Динамика, энергия, импульс, гравитация",
+                    momentum:
+                        "<strong>Импульс:</strong> \\( \\vec{p} = m\\vec{v} \\)",
+                    momentum_change:
+                        "<strong>Изменение импульса:</strong> \\( \\Delta\\vec{p} = \\vec{F}\\,\\Delta t \\)",
+                    momentum_conservation:
+                        "<strong>Закон сохранения импульса:</strong> \\( \\sum\\vec{p}_1 = \\sum\\vec{p}_2 \\)",
+                    kinetic_energy:
+                        "<strong>Кинетическая энергия:</strong> \\( E_k = \\dfrac{mv^2}{2} \\)",
+                    potential_energy:
+                        "<strong>Потенциальная энергия:</strong> \\( E_p = mgh \\)",
+                    energy_conservation:
+                        "<strong>Закон сохранения энергии:</strong> \\( E_{k1} + E_{p1} = E_{k2} + E_{p2} \\)",
+                    power: "<strong>Мощность:</strong> \\( N = \\dfrac{A}{t} \\)",
+                    gravity_law:
+                        "<strong>Закон тяготения:</strong> \\( F = G\\dfrac{m_1 m_2}{r^2} \\)",
+                    anim_gravity: "Анимация: Свободное падение.",
+                    class10:
+                        "10 класс — Электростатика, магнетизм, оптика, колебания",
+                    coulomb:
+                        "<strong>Сила Кулона:</strong> \\( F = k\\dfrac{q_1 q_2}{r^2} \\)",
+                    electric_field:
+                        "<strong>Напряжённость поля:</strong> \\( \\vec{E} = \\dfrac{\\vec{F}}{q} \\)",
+                    potential:
+                        "<strong>Потенциал:</strong> \\( \\varphi = \\dfrac{A}{q} \\)",
+                    capacitance:
+                        "<strong>Ёмкость:</strong> \\( C = \\dfrac{q}{U} \\)",
+                    ampere_force:
+                        "<strong>Сила Ампера:</strong> \\( F = BIl\\sin\\alpha \\)",
+                    lorentz_force:
+                        "<strong>Сила Лоренца:</strong> \\( \\vec{F} = q[\\vec{v}\\times\\vec{B}] \\)",
+                    faraday:
+                        "<strong>Закон Фарадея:</strong> \\( \\mathcal{E} = -\\dfrac{\\Delta\\Phi}{\\Delta t} \\)",
+                    pendulum_period:
+                        "<strong>Период маятника:</strong> \\( T = 2\\pi\\sqrt{\\dfrac{l}{g}} \\)",
+                    spring_period:
+                        "<strong>Пружинный маятник:</strong> \\( T = 2\\pi\\sqrt{\\dfrac{m}{k}} \\)",
+                    refraction_law:
+                        "<strong>Преломление:</strong> \\( \\dfrac{\\sin i}{\\sin r} = n \\)",
+                    lens_formula:
+                        "<strong>Линза:</strong> \\( \\dfrac{1}{d} + \\dfrac{1}{f} = \\dfrac{1}{F} \\)",
+                    additional_sections: "Дополнительные разделы",
+                    reactive_energy: "Реактивная энергия (AC)",
+                    reactive_energy_desc:
+                        "В цепях переменного тока: \\( Q = UI\\sin\\phi \\). Циркулирует между источником и нагрузкой без полезной работы.",
+                    anim_reactive:
+                        "Анимация: Осциллирующая реактивная энергия.",
+                    elasticity: "Упругость (დრეკადობა)",
+                    elasticity_desc:
+                        "Свойство возвращаться к исходной форме. \\( F = -kx \\), \\( E = \\dfrac{1}{2}kx^2 \\).",
+                    anim_elasticity: "Анимация: Упругая деформация пружины.",
+                    collisions_title: "Столкновения (удары)",
+                    collisions_intro:
+                        "При столкновении тел закон сохранения импульса выполняется всегда.",
+                    elastic_title: "Упругий удар",
+                    elastic_desc:
+                        "Сохраняются и импульс, и кинетическая энергия. Шарики отскакивают друг от друга. При равных массах — полный обмен скоростями.",
+                    anim_elastic:
+                        "Анимация: Упругий удар — шарики отскакивают.",
+                    inelastic_title: "Абсолютно неупругий удар",
+                    inelastic_desc:
+                        "Тела слипаются и движутся совместно. Импульс сохраняется, кинетическая энергия частично переходит в теплоту.",
+                    anim_inelastic:
+                        "Анимация: Неупругий удар — шарики слипаются.",
+                    elasticity_h: "Упругость (დრეკადობა)",
+                    elasticity_desc2:
+                        "Упругость — свойство тела восстанавливать форму после снятия деформации. Закон Гука: \\( F = -kx \\). Потенциальная энергия деформации:",
+                    anim_elastic2:
+                        "Анимация: Деформация и восстановление пружины.",
+                    reactive_title: "Реактивное движение",
+                    reactive_intro:
+                        "Реактивное движение возникает, когда тело выбрасывает часть своей массы — сила реакции двигает тело вперёд. Внешние силы не нужны.",
+                    tsiolkovsky_title: "Формула Циолковского",
+                    tsiolkovsky_desc:
+                        "Скорость, приобретаемая ракетой, зависит от скорости истечения газов и отношения масс:",
+                    tsiolkovsky_vars:
+                        "где \\(u\\) — скорость истечения газов, \\(m_0\\) — начальная масса (с топливом), \\(m_k\\) — конечная масса (без топлива).",
+                    reactive_momentum: "Закон сохранения импульса",
+                    reactive_momentum_desc:
+                        "Изначально система покоится: \\(\\vec{p} = 0\\). После выброса газа:",
+                    reactive_momentum_note:
+                        "Ракета и газы движутся в противоположные стороны — суммарный импульс остаётся нулём.",
+                    anim_rocket:
+                        "Анимация: Ракета выбрасывает газ назад и летит вперёд.",
+                    reactive_examples_title: "Примеры в природе и технике",
+                    reactive_ex1:
+                        "🚀 <strong>Ракета / космический запуск</strong> — газы выброшены вниз",
+                    reactive_ex2:
+                        "✈️ <strong>Реактивный самолёт</strong> — горячие газы назад",
+                    reactive_ex3:
+                        "🦑 <strong>Кальмар / Осьминог</strong> — выбрасывает воду для движения",
+                    reactive_ex4:
+                        "🎈 <strong>Шарик</strong> — воздух выходит, шарик летит в другую сторону",
+                },
+                ka: {
+                    title: "ფიზიკის სამყარო",
+                    btn_dynamics: "დინამიკა",
+                    btn_basic_concepts: "ცნებები",
+                    btn_newtons_laws: "ნიუტონის კანონები",
+                    btn_hydrostatics: "ჰიდროსტატიკა",
+                    btn_formulas: "ფორმულები",
+                    btn_additional: "დამატებითი",
+                    btn_collisions: "შეჯახებები",
+                    btn_reactive: "რეაქტიული მოძრაობა",
+                    dynamics_title: "ნიუტონის კანონები და დინამიკის საფუძვლები",
+                    dynamics_desc:
+                        "დინამიკა არის მექანიკის განხეობა, რომელიც სწავლობს სხეულთა მექანიკური მოძრაობის მიზეზებს.",
+                    basic_concepts: "ძირითადი ცნებები",
+                    material_point:
+                        "<strong>მატერიალური წერტილი</strong>: სხეულის მოდელი, რომლის ზომები უგულებელყოფილია.",
+                    translational_motion:
+                        "<strong>წინსვლითი მოძრაობა</strong>: სხეულის ყველა წერტილს აქვს ერთი და იგივე სიჩქარე.",
+                    inertia:
+                        "<strong>ინერცია</strong>: სხეულების თვისება შეინარჩუნოს სიჩქარე გარე ძალების არარსებობისას.",
+                    anim_inertia: "ანიმაცია: ინერცია.",
+                    newtons_laws: "ნიუტონის კანონები",
+                    newtons_intro:
+                        "ნიუტონის კანონები კლასიკური მექანიკის ფუნდამენტური პრინციპებია.",
+                    first_law: "პირველი კანონი (ინერციის კანონი)",
+                    first_law_desc:
+                        "ინერციულ სისტემებში სხეული მოძრაობს თანაბრად სწორხაზოვნად, თუ \\( \\sum \\vec{F} = 0 \\).",
+                    first_law_notes:
+                        "დედამიწა ინერციული სისტემის კარგი მიახლოებაა ლოკალური ამოცანებისათვის.",
+                    anim_desc1: "ანიმაცია: ბურთი თანაბარ მოძრაობაში.",
+                    second_law: "მეორე კანონი",
+                    second_law_desc: "\\[ \\sum \\vec{F} = m \\vec{a} \\]",
+                    anim_desc2: "ანიმაცია: მანქანა აჩქარდება ძალის მოქმედებით.",
+                    third_law: "მესამე კანონი",
+                    third_law_desc: "\\[ \\vec{F_1} = -\\vec{F_2} \\]",
+                    anim_desc3: "ანიმაცია: ორი სხეული ურთიერთქმედებს.",
+                    hydrostatics_title: "ჰიდროსტატიკა",
+                    hydrostatics_intro:
+                        "სითხეებში წნევა, პასკალის კანონი, შემაერთებელი ჭურჭელი.",
+                    pressure_formula: "წნევა",
+                    pressure_desc: "\\[ P = \\frac{F}{S} \\]",
+                    hydro_pressure: "ჰიდროსტატიკური წნევა",
+                    hydro_pressure_desc: "\\[ P = \\rho g h \\]",
+                    example_calc:
+                        "მაგალითი (ვერცხლისწყალი): \\[ P \\approx 10^5\\,\\text{Па} \\]",
+                    pascal_law: "პასკალის კანონი",
+                    pascal_desc:
+                        "წნევა გადაეცემა სითხის ყველა წერტილს თანაბრად.",
+                    communicating_vessels: "შემაერთებელი ჭურჭელი",
+                    vessels_desc:
+                        "ერთგვაროვანი სითხის დონე ყველა ჭურჭელში თანაბარია.",
+                    anim_vessels: "ანიმაცია: შემაერთებელი ჭურჭელი.",
+                    manometer: "მანომეტრი",
+                    manometer_desc: "\\( P = P_0 + \\rho g \\Delta h \\)",
+                    anim_manometer: "ანიმაცია: ვერცხლისწყლის მანომეტრი.",
+                    school_formulas: "ფორმულები — 7–10 კლასი",
+                    class7: "7 კლასი",
+                    speed: "<strong>სიჩქარე:</strong> \\( v = s/t \\)",
+                    acceleration_f:
+                        "<strong>დაჩქარება:</strong> \\( a = \\Delta v/\\Delta t \\)",
+                    density: "<strong>სიმჭიდროვე:</strong> \\( \\rho = m/V \\)",
+                    pressure_f: "<strong>წნევა:</strong> \\( p = F/S \\)",
+                    hydro_p:
+                        "<strong>ჰიდროსტ. წნევა:</strong> \\( p = \\rho g h \\)",
+                    archimedes:
+                        "<strong>არქიმედეს ძალა:</strong> \\( F_A = \\rho g V \\)",
+                    gravity_force:
+                        "<strong>სიმძიმის ძალა:</strong> \\( F_g = mg \\)",
+                    hooke: "<strong>ჰუკის კანონი:</strong> \\( F = -k\\Delta l \\)",
+                    anim_hooke: "ანიმაცია: დრეკადობა.",
+                    class8: "8 კლასი",
+                    heat_quantity:
+                        "<strong>სითბო:</strong> \\( Q = cm\\Delta T \\)",
+                    melting_heat:
+                        "<strong>დნობის სითბო:</strong> \\( Q = \\lambda m \\)",
+                    vapor_heat:
+                        "<strong>ორთქლად ქცევა:</strong> \\( Q = rm \\)",
+                    joule_lenz:
+                        "<strong>ჯოულ-ლენცი:</strong> \\( Q = I^2 R t \\)",
+                    current_strength: "<strong>დენი:</strong> \\( I = q/t \\)",
+                    ohm_law: "<strong>ომის კანონი:</strong> \\( I = U/R \\)",
+                    class9: "9 კლასი",
+                    momentum:
+                        "<strong>იმპულსი:</strong> \\( \\vec{p} = m\\vec{v} \\)",
+                    momentum_change:
+                        "<strong>იმპულსის ცვლილება:</strong> \\( \\Delta\\vec{p} = \\vec{F}\\Delta t \\)",
+                    momentum_conservation: "<strong>იმპულსის შენახვა</strong>",
+                    kinetic_energy:
+                        "<strong>კინეტიკური ენერგია:</strong> \\( E_k = mv^2/2 \\)",
+                    potential_energy:
+                        "<strong>პოტენციური ენერგია:</strong> \\( E_p = mgh \\)",
+                    energy_conservation: "<strong>ენერგიის შენახვა</strong>",
+                    power: "<strong>სიმძლავრე:</strong> \\( N = A/t \\)",
+                    gravity_law:
+                        "<strong>მსოფლიო მიზიდულობა:</strong> \\( F = Gm_1m_2/r^2 \\)",
+                    anim_gravity: "ანიმაცია: თავისუფალი ვარდნა.",
+                    class10: "10 კლასი",
+                    coulomb:
+                        "<strong>კულონის ძალა:</strong> \\( F = kq_1q_2/r^2 \\)",
+                    electric_field:
+                        "<strong>ელ. ველი:</strong> \\( E = F/q \\)",
+                    potential:
+                        "<strong>პოტენციალი:</strong> \\( \\varphi = A/q \\)",
+                    capacitance: "<strong>ტევადობა:</strong> \\( C = q/U \\)",
+                    ampere_force:
+                        "<strong>ამპერის ძალა:</strong> \\( F = BIl\\sin\\alpha \\)",
+                    lorentz_force:
+                        "<strong>ლორენცის ძალა:</strong> \\( F = qvB \\)",
+                    faraday:
+                        "<strong>ფარადეის კანონი:</strong> \\( \\mathcal{E} = -\\Delta\\Phi/\\Delta t \\)",
+                    pendulum_period:
+                        "<strong>მათემ. ქანქარა:</strong> \\( T = 2\\pi\\sqrt{l/g} \\)",
+                    spring_period:
+                        "<strong>საგაზაფხულო ქანქარა:</strong> \\( T = 2\\pi\\sqrt{m/k} \\)",
+                    refraction_law:
+                        "<strong>გარდატეხა:</strong> \\( \\sin i / \\sin r = n \\)",
+                    lens_formula:
+                        "<strong>ლინზა:</strong> \\( 1/d + 1/f = 1/F \\)",
+                    additional_sections: "დამატებითი განყოფილებები",
+                    reactive_energy: "რეაქტიული ენერგია",
+                    reactive_energy_desc: "\\( Q = UI\\sin\\phi \\)",
+                    anim_reactive: "ანიმაცია: რეაქტიული ენერგია.",
+                    elasticity: "დრეკადობა",
+                    elasticity_desc:
+                        "\\( F = -kx,\\quad E = \\frac{1}{2}kx^2 \\)",
+                    anim_elasticity: "ანიმაცია: დრეკადი დეფორმაცია.",
+                    collisions_title: "შეჯახებები (დარტყმები)",
+                    collisions_intro:
+                        "შეჯახებისას იმპულსის შენახვის კანონი ყოველთვის მოქმედებს.",
+                    elastic_title: "დრეკადი დარტყმა",
+                    elastic_desc:
+                        "შენარჩუნებულია როგორც იმპულსი, ასევე კინეტიკური ენერგია. ბურთები ერთმანეთისგან ირიკება.",
+                    anim_elastic: "ანიმაცია: დრეკადი შეჯახება.",
+                    inelastic_title: "სრულიად არადრეკადი დარტყმა",
+                    inelastic_desc:
+                        "სხეულები ერთმანეთს ეწებება და ერთად მოძრაობენ. იმპულსი ინახება, კინეტიკური ენერგია ნაწილობრივ იკარგება.",
+                    anim_inelastic:
+                        "ანიმაცია: არადრეკადი შეჯახება — ბურთები ერთად.",
+                    elasticity_h: "დრეკადობა",
+                    elasticity_desc2:
+                        "დრეკადობა — სხეულის თვისება დეფორმაციის მოხსნის შემდეგ პირვანდელ ფორმას დაუბრუნდეს. \\( F = -kx \\), \\( E = \\dfrac{1}{2}kx^2 \\).",
+                    anim_elastic2: "ანიმაცია: დრეკადობა.",
+                    reactive_title: "რეაქტიული მოძრაობა",
+                    reactive_intro:
+                        "რეაქტიული მოძრაობა ხდება მაშინ, როდესაც სხეული თავისი მასის ნაწილს გამოყრის.",
+                    tsiolkovsky_title: "ციოლკოვსკის ფორმულა",
+                    tsiolkovsky_desc:
+                        "\\[ \\Delta v = u \\ln\\frac{m_0}{m_k} \\]",
+                    tsiolkovsky_vars:
+                        "სადაც \\(u\\) — გამონაბოლქვი გაზის სიჩქარე, \\(m_0\\) — საწყისი მასა, \\(m_k\\) — საბოლოო მასა.",
+                    reactive_momentum: "იმპულსის შენახვა",
+                    reactive_momentum_desc:
+                        "სისტემა თავდაპირველად მოსვენებულია: \\(\\vec{p} = 0\\).",
+                    reactive_momentum_note:
+                        "რაკეტა და გაზები საპირისპირო მიმართულებით მოძრაობენ.",
+                    anim_rocket: "ანიმაცია: რაკეტა.",
+                    reactive_examples_title: "მაგალითები",
+                    reactive_ex1: "🚀 <strong>რაკეტა</strong>",
+                    reactive_ex2: "✈️ <strong>რეაქტიული თვითმფრინავი</strong>",
+                    reactive_ex3:
+                        "🦑 <strong>კალმარი</strong> — წყალს გამოყრის",
+                    reactive_ex4:
+                        "🎈 <strong>ბუშტი</strong> — ჰაერი გამოდის, ბუშტი მიფრინავს",
+                },
+            };
+
+            let currentLang = "en";
+
+            function openModal(target) {
+                const section = document.getElementById(target);
+                if (!section) return;
+
+                // Clone content into modal
+                const clone = section.cloneNode(true);
+                clone.style.display = "block";
+
+                // Extract title from h2 inside, set modal header
+                const h2 = clone.querySelector("h2");
+                const titleText = h2 ? h2.innerText : "";
+                document.getElementById("modal-title").textContent = titleText;
+                if (h2) h2.remove(); // already shown in header
+
+                const body = document.getElementById("modal-body");
+                body.innerHTML = clone.innerHTML;
+
+                // Apply current language translations to modal content
+                body.querySelectorAll(".lang").forEach((el) => {
+                    const key = el.getAttribute("key");
+                    if (arrLang[currentLang] && arrLang[currentLang][key]) {
+                        el.innerHTML = arrLang[currentLang][key];
+                    }
+                });
+
+                document.getElementById("modal-overlay").classList.add("open");
+                document.body.style.overflow = "hidden";
+
+                // Render KaTeX inside modal
+                setTimeout(() => renderMathInElement(body), 80);
+            }
+
+            function closeModal() {
+                document
+                    .getElementById("modal-overlay")
+                    .classList.remove("open");
+                document.body.style.overflow = "";
+            }
+
+            $(function () {
+                // Section buttons → open modal
+                $(".section-btn").click(function () {
+                    $(".section-btn").removeClass("active");
+                    $(this).addClass("active");
+                    openModal($(this).data("target"));
+                });
+
+                // Close modal
+                $("#modal-close-btn").click(closeModal);
+                $("#modal-overlay").click(function (e) {
+                    if (e.target === this) closeModal();
+                });
+                $(document).keydown(function (e) {
+                    if (e.key === "Escape") closeModal();
+                });
+
+                // Language switching
+                $(".translate").click(function () {
+                    currentLang = $(this).attr("id");
+                    if (!arrLang[currentLang]) return;
+
+                    // Update nav buttons and hidden sections
+                    $(".lang").each(function () {
+                        const key = $(this).attr("key");
+                        if (arrLang[currentLang][key]) {
+                            $(this).html(arrLang[currentLang][key]);
+                        }
+                    });
+
+                    // If modal is open, re-translate its content too
+                    if ($("#modal-overlay").hasClass("open")) {
+                        const activeBtn = $(".section-btn.active");
+                        if (activeBtn.length)
+                            openModal(activeBtn.data("target"));
+                    }
+
+                    setTimeout(() => renderMathInElement(document.body), 100);
+                });
+
+                // Open first section by default
+                $(".section-btn.active").first().trigger("click");
+            });
+        </script>
+    </body>
+</html>
